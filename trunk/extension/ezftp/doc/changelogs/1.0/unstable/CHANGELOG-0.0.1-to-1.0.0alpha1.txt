@@ -1,0 +1,21 @@
+eZFTP extension changelogs
+--------------------------
+
+from 0.0.1 to 1.0.0-alpha1
+===================
+
+-- added support for STOR command
+-- fixed a bug with client using "LIST -al" or "LIST -l"
+-- added support for RETR command
+-- fixed bug in LIST command (coming from eZPublish runtime cache)
+-- added utf8 feature (http://www.tools.ietf.org/html/draft-ietf-ftpext-utf-8-option-00)
+-- fixed charset bug, charset is ASCII by default now
+-- added support for FEAT and OPTS command according to RFC 2389 (http://rfc.net/rfc2389.html)
+-- improved command parsing
+-- added support of PORT command
+-- removed some external direct variable calls
+-- added welcome message in ezftp.ini
+-- recoded "send" function with multi-line support
+-- fixed bug on "CWD /" command
+-- added phpdocumentor comments in code
+-- fixed DynamicIP support
