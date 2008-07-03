@@ -149,6 +149,9 @@ class eZFTPClient
                 case 'DELE':
                     $this->cmdDele();
                     break;
+                case 'RMD':
+                    $this->cmdRmd();
+                    break;
 //                case 'APPE':
 //                    $this->cmdAppe();
 //                    break;
@@ -157,9 +160,6 @@ class eZFTPClient
 //                    break;
 //                case 'MKD':
 //                    $this->cmdMkd();
-//                    break;
-//                case 'RMD':
-//                    $this->cmdRmd();
 //                    break;
 //                case 'RNFR':
 //                    $this->cmdRnfr();
@@ -873,6 +873,41 @@ class eZFTPClient
         else
         {
             $this->send( 250, "DELE command successfull." );
+        }
+    }
+    
+    
+    /**
+     * RMD ftp command
+     * syntax:
+     *   RMD <SP> <pathname> <CRLF>
+     *   <pathname> ::= <string>
+     */
+    private function cmdRmd()
+    {
+        $path = $this->cleanPath( $this->parameter );
+        
+        $this->io->setPath( $path );
+
+        if ( !$this->io->exists() )
+        {
+            $this->send( 550, "Can't delete $path: Directory does not exist." );
+        }
+        elseif ( $this->io->type() != eZFTPInOut::TYPE_DIRECTORY )
+        {
+            $this->send( 550, "Can't delete $path: Not a directory" );
+        }
+        elseif ( !$this->io->canDelete() )
+        {
+            $this->send( 550, "Can't delete $path: Permission denied" );
+        }
+        elseif ( !$this->io->delete() )
+        {
+            $this->send( 550, "Couldn't delete directory." );
+        }
+        else
+        {
+            $this->send( 250, "RMD command successfull." );
         }
     }
     

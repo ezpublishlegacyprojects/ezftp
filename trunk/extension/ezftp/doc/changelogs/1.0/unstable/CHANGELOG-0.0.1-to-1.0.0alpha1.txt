@@ -4,6 +4,7 @@ eZFTP extension changelogs
 from 0.0.1 to 1.0.0-alpha1
 ===================
 
+-- added support for RMD command
 -- added support for STOR command
 -- fixed a bug with client using "LIST -al" or "LIST -l"
 -- added support for RETR command
