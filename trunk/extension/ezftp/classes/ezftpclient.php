@@ -144,9 +144,14 @@ class eZFTPClient
                     $this->cmdRetr();
                     break;
                 case 'STOR':
-                //case 'APPE':
                     $this->cmdStor();
                     break;
+                case 'DELE':
+                    $this->cmdDele();
+                    break;
+//                case 'APPE':
+//                    $this->cmdAppe();
+//                    break;
 //                case 'SITE':
 //                    $this->cmdSite();
 //                    break;
@@ -426,8 +431,7 @@ class eZFTPClient
                 return;
             }
             
-            $transfertText = ( $this->transferType == "A" ) ? "ASCII mode" : "Binary mode";
-            $this->send( 150, 'Opening ' . $transfertText . ' data connection' );
+            $this->send( 150, 'Opening data connection' );
             
             /*
             while ( !$this->dataTransfer->isDone() )
@@ -812,7 +816,7 @@ class eZFTPClient
             {
                 $this->send( 550, "Can't write $path: Not a file" );
             }
-            elseif ( !$this->io->canWrite() )
+            elseif ( !$this->io->canModify() )
             {
                 $this->send( 550, "Can't write $path: Permission denied" );
             }
@@ -835,6 +839,40 @@ class eZFTPClient
         {
             $this->send( 425, "Can't open data connection");
             return;
+        }
+    }
+    
+    /**
+     * DELE ftp command
+     * syntax:
+     *   DELE <SP> <pathname> <CRLF>
+     *   <pathname> ::= <string>
+     */
+    private function cmdDele()
+    {
+        $path = $this->cleanPath( $this->parameter );
+        
+        $this->io->setPath( $path );
+
+        if ( !$this->io->exists() )
+        {
+            $this->send( 550, "Can't delete $path: File does not exist." );
+        }
+        elseif ( $this->io->type() != eZFTPInOut::TYPE_FILE )
+        {
+            $this->send( 550, "Can't delete $path: Not a file" );
+        }
+        elseif ( !$this->io->canDelete() )
+        {
+            $this->send( 550, "Can't delete $path: Permission denied" );
+        }
+        elseif ( !$this->io->delete() )
+        {
+            $this->send( 550, "Couldn't delete file." );
+        }
+        else
+        {
+            $this->send( 250, "DELE command successfull." );
         }
     }
     

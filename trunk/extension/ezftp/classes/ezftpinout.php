@@ -36,7 +36,9 @@ class eZFTPInOut
         $this->node = null;
         $this->exists = false;
         $this->canRead = false;
-        $this->canWrite = false;
+        $this->canModify = false;
+        $this->canCreate = false;
+        $this->canDelete = false;
         $this->tmpFp = false;
         $this->tmpFilepath = false;
     }
@@ -78,7 +80,7 @@ class eZFTPInOut
            return;
         }
 
-        // We have reached the end of the path
+        // We have reached the end of the path /siteacess/<content/media>
         if ( !$path )
         {
             $this->exists = true;
@@ -120,7 +122,9 @@ class eZFTPInOut
 
         $this->exists = true;
         $this->canRead = true;
-        $this->canWrite = true;
+        $this->canModify = true;
+        $this->canCreate = true;
+        $this->canDelete = true;
         return;
     }
 
@@ -169,9 +173,25 @@ class eZFTPInOut
     /**
      * @return boolean if user can read the working path
      */
-    public function canWrite()
+    public function canModify()
     {
-        return $this->canWrite;
+        return $this->canModify;
+    }
+
+    /**
+     * @return boolean if user can read the working path
+     */
+    public function canCreate()
+    {
+        return $this->canCreate;
+    }
+
+    /**
+     * @return boolean if user can read the working path
+     */
+    public function canDelete()
+    {
+        return $this->canDelete;
     }
 
     /**
@@ -301,7 +321,25 @@ class eZFTPInOut
         return $success;
     }
 
-    public function perms( $path )
+    /**
+     * Handles deletion on the content tree level.
+     * It will try to find the node of the target \a $target
+     *and then try to remove it (ie. move to trash) if the user is allowed.
+     */
+    function delete()
+    {
+        if ( $this->node == null )
+        {
+            eZDebug::writeError( "Cannot delete node/object $this->nodePath", 'eZFTPInOut::delete' );
+            return false;
+        }
+
+        $this->node->removeNodeFromTree( true );
+        return true;
+    }
+
+
+    private function perms( $path )
     {
         return 'drwxr-xr-x';
     }
@@ -856,7 +894,9 @@ class eZFTPInOut
     private $node;
     private $exists;
     private $canRead;
-    private $canWrite;
+    private $canModify;
+    private $canCreate;
+    private $canDelete;
     private $tmpFp;
     private $tmpFilepath;
 }
