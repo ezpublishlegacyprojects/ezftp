@@ -2,8 +2,9 @@
 
 [eZFTPSettings]
 
-# Which IP the FTP server must listen 
-ListenAddress=192.168.0.1
+# Which IP the FTP server must listen
+# 0 to listen on every avalaible IP
+ListenAddress=0
 
 # Which port the FTP server must listen
 ListenPort=21
