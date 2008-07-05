@@ -80,7 +80,7 @@ class eZFTPServer
             foreach( $set as $sockKey => $sock )
             {
                 $clientID = array_search( $sock, $setArray );
-                if ( !$clientID || $clientID == "server")
+                if ( !$clientID || $clientID == 'server' )
                     continue;
                 
                 if ( $this->clients[$clientID]->hasDataTransfer() )
@@ -112,7 +112,7 @@ class eZFTPServer
                     {
                         continue;
                     }
-                    elseif ( $name == "server" )
+                    elseif ( $name == 'server' )
                     {
                         if ( !( $connection = socket_accept( $this->socket ) ) )
                         {
@@ -122,7 +122,7 @@ class eZFTPServer
                         else
                         {
                             // add socket to client list and announce connection
-                            $clientID = uniqid("client_");
+                            $clientID = uniqid( 'client_' );
                             
                             $this->clients[$clientID] = new eZFTPClient( $connection, $clientID, $this->settings );
                             
