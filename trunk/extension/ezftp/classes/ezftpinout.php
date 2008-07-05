@@ -112,6 +112,7 @@ class eZFTPInOut
         if ( !$node )
         {
             $this->exists = false;
+            $this->canCreate = true;
             return;
         }
         
@@ -239,7 +240,7 @@ class eZFTPInOut
         return $data;
     }
     
-    function openTemporaryFile( $append = false )
+    public function openTemporaryFile( $append = false )
     {
         $type = ($append) ? "a" : "w";
       
@@ -258,7 +259,7 @@ class eZFTPInOut
         return (is_resource($this->tmpFp));
     }
     
-    function closeTemporaryFile()
+    public function closeTemporaryFile()
     {
     	fclose($this->tmpFp);
         
@@ -284,9 +285,10 @@ class eZFTPInOut
             return;
         } 
         $parentNode = $this->fetchParentNodeByTranslation( $this->nodePath );
-        if ( $parentNode == null )
+        if ( !$parentNode )
         {
-            // The node does not exist, so we cannot put the file
+            //The node does not exist, so we cannot put the file
+            eZDebug::writeError( 'Invalid parent node', 'eZFTPInOut::createContentFromTemporaryFile' );
             return;
         }
 
@@ -295,16 +297,8 @@ class eZFTPInOut
         // We need the MIME-Type to figure out which content-class we will use
         $mimeInfo = eZMimeType::findByURL( $this->nodePath );
         $mime = $mimeInfo['name'];
-
-        $ini = eZINI::instance( 'ezftp.ini' );
-        $defaultObjectType = $ini->variable( 'PutSettings', 'DefaultClass' );
-
-        //$existingNode = $this->fetchNodeByTranslation( $this->nodePath );
         
-        $success = true;
-        
-        //$existingNode = $this->fetchNodeByTranslation( $this->nodePath );
-        
+        $success = true;        
         $upload = new eZContentUpload();
         if ( !$upload->handleLocalFile( $result, $this->tmpFilepath, $parentNodeID, $this->node ) )
         {
@@ -329,7 +323,7 @@ class eZFTPInOut
      * It will try to find the node of the target \a $target
      *and then try to remove it (ie. move to trash) if the user is allowed.
      */
-    function delete()
+    public function delete()
     {
         if ( $this->node == null )
         {
@@ -341,6 +335,64 @@ class eZFTPInOut
         return true;
     }
 
+    public function md()
+    {
+        $parentNode = $this->fetchParentNodeByTranslation( $this->nodePath );
+        if ( !$parentNode )
+        {
+            //The node does not exist, so we cannot put the file
+            eZDebug::writeError( 'Invalid parent node', 'eZFTPInOut::md' );
+            return false;
+        }
+         // Grab settings from the ini file:
+        $ini = eZINI::instance( 'ezftp.ini' );
+        $folderClassID = $ini->variable( 'FolderSettings', 'FolderClassID' );
+        $nameAttribute = $ini->variable( 'FolderSettings', 'NameAttribute' );
+        $languageCode = eZContentObject::defaultLanguage();
+
+        $contentObject = eZContentObject::createWithNodeAssignment( $parentNode, $folderClassID, $languageCode );
+        if ( $contentObject )
+        {
+            $db = eZDB::instance();
+            $db->begin();
+            $version = $contentObject->version( 1 );
+            $version->setAttribute( 'status', eZContentObjectVersion::STATUS_DRAFT );
+            $version->store();
+
+            $contentObjectID = $contentObject->attribute( 'id' );
+            $attribute = array_shift( $contentObject->fetchAttributesByIdentifier( array( $nameAttribute ), $version->attribute( 'version' ) ) );
+            if ( !$attribute )
+            {
+                //The node does not exist, so we cannot put the file
+                eZDebug::writeError( "Invalid attribute identifier '$nameAttribute' in settings", 'eZFTPInOut::md' );
+                return false;
+            }
+            
+            switch( $attribute->DataTypeString )
+            {
+                case "ezstring":
+                case "eztext":
+                {
+                    $attribute->setAttribute( 'data_text',  basename( $this->nodePath ) );
+                    $attribute->store();
+                }
+                break;
+                default:
+                     eZDebug::writeError( "Attribute '$nameAttribute' should be an ezstring or eztext datatype", 'eZFTPInOut::md' );
+                    return false;
+            }
+            $db->commit();
+
+            $operationResult = eZOperationHandler::execute( 'content', 'publish', array( 'object_id' => $contentObjectID,
+                                                                                         'version' => 1 ) );
+            return true;
+        }
+        else
+        {
+            eZDebug::writeError( "Could'nt create object", 'eZFTPInOut::md' );
+            return false;
+        }
+    }
 
     private function perms( $path )
     {
@@ -721,10 +773,10 @@ class eZFTPInOut
         {
             $ini = eZINI::instance( 'ezftp.ini' );
             $folderClasses = array();
-            if ( $ini->hasGroup( 'eZFTPSettings' ) and
-                 $ini->hasVariable( 'eZFTPSettings', 'FolderClasses' ) )
+            if ( $ini->hasGroup( 'FolderSettings' ) and
+                 $ini->hasVariable( 'FolderSettings', 'FolderClasses' ) )
             {
-                $folderClasses = $ini->variable( 'eZFTPSettings', 'FolderClasses' );
+                $folderClasses = $ini->variable( 'FolderSettings', 'FolderClasses' );
             }
             $this->folderClasses = $folderClasses;
         }
@@ -733,7 +785,6 @@ class eZFTPInOut
     
     private function encodePath( $path )
     {
-    	print_r( $path . ": " );
         //UTF-8 support
         if ( $this->client->isUtf8Enabled() )
         {
@@ -745,7 +796,6 @@ class eZFTPInOut
         }
         $codec = eZTextCodec::instance( false, $outputCharset );
         $path = $codec->convertString( $path );
-        print_r( $path ."\n" );
         return $path;
     }
     
@@ -811,7 +861,7 @@ class eZFTPInOut
         return $hasAccess;
     }
     
-    function fetchParentNodeByTranslation( $nodePathString )
+    private function fetchParentNodeByTranslation( $nodePathString )
     {
         // Strip extensions. E.g. .jpg
         $nodePathString = $this->fileBasename( $nodePathString );
@@ -841,6 +891,14 @@ class eZFTPInOut
             $translateResult = eZURLAliasML::translate( $nodePathString );
         }
 
+// TODO we could replace the next part with the following code ?
+//        // Attempt to get nodeID from the URL.
+//        $nodeID = eZURLAliasML::fetchNodeIDByPath( $nodePathString );
+//        if ( !$nodeID )
+//        {
+//            return false;
+//        }
+
         // Get the ID of the node (which is the last part of the translated path).
         if ( preg_match( "#^content/view/full/([0-9]+)$#", $nodePathString, $matches ) )
         {
@@ -853,7 +911,6 @@ class eZFTPInOut
 
         // Attempt to fetch the node.
         $node = eZContentObjectTreeNode::fetch( $nodeID );
-
         // Return the node.
         return $node;
     }

@@ -152,6 +152,9 @@ class eZFTPClient
                 case 'RMD':
                     $this->cmdRmd();
                     break;
+                case 'MKD':
+                    $this->cmdMkd();
+                    break;
 //                case 'APPE':
 //                    $this->cmdAppe();
 //                    break;
@@ -908,6 +911,36 @@ class eZFTPClient
         else
         {
             $this->send( 250, "RMD command successfull." );
+        }
+    }
+    
+    /**
+     * MKD ftp command
+     * syntax:
+     *   MKD <SP> <pathname> <CRLF>
+     *   <pathname> ::= <string>
+     */
+    private function cmdMkd()
+    {
+        $path = $this->cleanPath( $this->parameter );
+        
+        $this->io->setPath( $path );
+
+        if ( $this->io->exists() )
+        {
+            $this->send( 550, "Can't create $path: Directory exist." );
+        }
+        elseif ( !$this->io->canCreate() )
+        {
+            $this->send( 550, "Can't create $path: Permission denied" );
+        }
+        elseif ( !$this->io->md() )
+        {
+            $this->send( 550, "Couldn't create directory." );
+        }
+        else
+        {
+            $this->send( 250, "MKD command successfull" );
         }
     }
     

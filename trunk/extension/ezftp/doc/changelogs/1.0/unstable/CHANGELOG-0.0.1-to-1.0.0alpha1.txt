@@ -4,15 +4,16 @@ eZFTP extension changelogs
 from 0.0.1 to 1.0.0-alpha1
 ===================
 
+-- added support of RMD command
 -- fixed bug http://projects.ez.no/ezftp/forum/bug_report/bug_with_cwd_command_utf8_mode_not_enabled
--- added support for RMD command
--- added support for STOR command
+-- added support of RMD command
+-- added support of STOR command
 -- fixed a bug with client using "LIST -al" or "LIST -l"
--- added support for RETR command
+-- added support of RETR command
 -- fixed bug in LIST command (coming from eZPublish runtime cache)
 -- added utf8 feature (http://www.tools.ietf.org/html/draft-ietf-ftpext-utf-8-option-00)
 -- fixed charset bug, charset is ASCII by default now
--- added support for FEAT and OPTS command according to RFC 2389 (http://rfc.net/rfc2389.html)
+-- added support of FEAT and OPTS command according to RFC 2389 (http://rfc.net/rfc2389.html)
 -- improved command parsing
 -- added support of PORT command
 -- removed some external direct variable calls
