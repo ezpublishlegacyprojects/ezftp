@@ -619,7 +619,7 @@ class eZFTPInOut
         $entries = array();
 
         //renew current logged in user 
-        $user = &$this->client->getUser();
+        $user = &$this->client->user;
         eZUser::setCurrentlyLoggedInUser( $user, $user->id() );
         
         $this->restorePolicyLimitationRuntimeCache( $user->id() );
@@ -822,10 +822,10 @@ class eZFTPInOut
     private function userHasSiteAccess( $site )
     {
         //renew current logged in user
-        $user = &$this->client->getUser();
+        $user = &$this->client->user;
         eZUser::setCurrentlyLoggedInUser( $user, $user->id() );
         
-        $result = $this->client->getUser()->hasAccessTo( 'user', 'login' );
+        $result = $this->client->user->hasAccessTo( 'user', 'login' );
         $accessWord = $result['accessWord'];
 
         if ( $accessWord == 'limited' )

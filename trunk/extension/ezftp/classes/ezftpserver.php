@@ -85,7 +85,7 @@ class eZFTPServer
                 
                 if ( $this->clients[$clientID]->hasDataTransfer() )
                 {
-                    $dataTransfer = &$this->clients[$clientID]->getDataTransfer();
+                    $dataTransfer = &$this->clients[$clientID]->dataTransfer;
                     if ( $dataTransfer->isDone() )
                     {
                         $this->clients[$clientID]->onDataTransferFinished();
@@ -108,7 +108,7 @@ class eZFTPServer
                 {
                     $name = array_search ( $sock, $setArray );
 
-                    if (! $name)
+                    if (! $name )
                     {
                         continue;
                     }
@@ -189,7 +189,7 @@ class eZFTPServer
                                     // interact with client
                                     if ( !$this->clients[$clientID]->interact() )
                                     {
-                                        $this->removeClient($clientID);
+                                        $this->removeClient( $clientID );
                                     }
                                     else
                                     {
@@ -209,7 +209,9 @@ class eZFTPServer
     {
         eZDebug::writeError( socket_strerror( socket_last_error( $this->socket) ) , 'eZFTPServer::socketError' );
         if ( is_resource( $this->socket) )
+        {
             @socket_close( $this->socket );
+        }
     }
     
     /**
@@ -259,13 +261,8 @@ class eZFTPServer
         eZDB::setInstance( $nullVar );
     }
 
-    //settings from ezftp.ini
     private $settings;
-    
-    //main socket
     private $socket;
-    
-    //list of eZFTPClient objects  
     private $clients;
 }
 ?>

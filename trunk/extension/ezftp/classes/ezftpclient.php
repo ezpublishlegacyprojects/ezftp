@@ -505,8 +505,6 @@ class eZFTPClient
         {
             $this->send( 230, 'User ' . $this->login . ' logged in from ' . $this->addr );
             $this->user = $user;
-            $this->userUid = '33';
-            $this->userGid = '33';
             $this->userHomeDir = '/';
             $this->io = new eZFTPInOut( $this );
         }
@@ -985,14 +983,6 @@ class eZFTPClient
     }
 
     /**
-     * 
-     */
-    public function getDataTransfer()
-    {
-        return $this->dataTransfer;
-    }
-    
-    /**
      * @return boolean true if the client has a data transfer open
      */
     public function hasDataTransfer()
@@ -1003,11 +993,6 @@ class eZFTPClient
     public function isUtf8Enabled()
     {
     	return $this->utf8Enabled;
-    }
-    
-    public function getUser()
-    {
-    	return $this->user;
     }
     
     private function cleanPath( $path )
@@ -1036,52 +1021,31 @@ class eZFTPClient
         return $path;
     }
 
-    //settings from ezftp.ini
-    private $settings;
-    
-    //eZPublish object user
-    private $user;
-    
-    //login given
-    var $login;
-
-    //unique client id
     private $id;
-    
-    //socket resource
-    var $connection;
+    private $settings;
+
+    public $user;
+    private $login;
+    private $userHomeDir;
     
     var $buffer;
     var $transferType;
-    var $userUid;
-    var $userGid;
-    var $userHomeDir;
+    
+    public $connection;
     var $addr;
     var $port;
     var $pasv;
     
-    //data transfert variables
-    var $dataTransfer;
+    public $dataTransfer;
     var $dataAddr;
     var $dataPort;
-    // passive ftp data socket and connection
     var $dataSocket;
     var $dataConnection;
-    // active ftp data socket pointer
     var $dataFsp;
-    
-    //command given
     var $command;
-    
-    //command parameter given 
     var $parameter;
-    
-    //eZFTPInOut object
     var $io;
-    
-    //current FTP directory
     var $cwd;
-    
     private $utf8Enabled;
     
 }

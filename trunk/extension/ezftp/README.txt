@@ -10,8 +10,8 @@ Contributors
 
    nanoFTPd
    --------
-   Arjen (nanoFTPd), arjenjb <at> wanadoo <dot> nl
-   Phanatic (nanoFTPd), linux <at> psoftwares <dot> hu
+   Arjen, arjenjb <at> wanadoo <dot> nl
+   Phanatic, linux <at> psoftwares <dot> hu
 
 License
 =======

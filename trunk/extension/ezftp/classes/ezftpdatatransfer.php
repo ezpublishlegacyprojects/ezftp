@@ -7,16 +7,22 @@ class eZFTPDataTransfer
     public function eZFTPDataTransfer( &$client )
     {
         $this->client = &$client;
-        $this->command = $client->command;
+        $this->command = &$client->command;
+        $this->io = &$client->io;
+        $this->pasv = &$client->pasv;
+        $this->dataSocket = &$client->dataSocket;
+        $this->dataAddr = &$client->dataAddr;
+        $this->dataPort = &$client->dataPort;
+        $this->transferType = &$client->transferType;
         $this->done = false;
     }
     
     public function interact()
     {
-        switch( $this->client->command )
+        switch( $this->command )
         {
             case "RETR":
-                if ( $data = $this->client->io->read() )
+                if ( $data = $this->io->read() )
                 {
                     $this->send( $data );
                     $this->done = true;
@@ -34,7 +40,7 @@ class eZFTPDataTransfer
                     {
                         $this->done = true;
                     }
-                    $this->client->io->writeTemporaryFile( $buffer );
+                    $this->io->writeTemporaryFile( $buffer );
                 }
                 else
                 {
@@ -43,7 +49,7 @@ class eZFTPDataTransfer
                 break;
 
             case "LIST":
-                $list = $this->client->io->ls();
+                $list = $this->io->ls();
                 if ( count( $list ) == 0 )
                 {
                     $this->send( '' );
@@ -65,10 +71,10 @@ class eZFTPDataTransfer
         
         if ( $this->done )
         {
-            if ( $this->client->command == "STOR" )
+            if ( $this->command == "STOR" )
             {
-                $this->client->io->createContentFromTemporaryFile();
-                $this->client->io->closeTemporaryFile();
+                $this->io->createContentFromTemporaryFile();
+                $this->io->closeTemporaryFile();
             }
             $this->close();
         }
@@ -76,7 +82,7 @@ class eZFTPDataTransfer
     
     function close()
     {
-        if ( !$this->client->pasv )
+        if ( !$this->pasv )
         {
             if ( is_resource( $this->dataFsp ) )
                 fclose( $this->dataFsp );
@@ -91,9 +97,9 @@ class eZFTPDataTransfer
     
     function open()
     {
-        if ( $this->client->pasv )
+        if ( $this->pasv )
         {
-            if ( !$connection = @socket_accept( $this->client->dataSocket  ) )
+            if ( !$connection = @socket_accept( $this->dataSocket  ) )
             {
                 eZDebug::writeError( 'Can not get connection' , 'eZFTPDataTransfer::open' );
                 return false;
@@ -115,7 +121,7 @@ class eZFTPDataTransfer
         }
         else
         {
-            $fsp = fsockopen( $this->client->dataAddr, $this->client->dataPort, $errno, $errstr, 30 );
+            $fsp = fsockopen( $this->dataAddr, $this->dataPort, $errno, $errstr, 30 );
 
             if ( !$fsp )
             {
@@ -131,7 +137,7 @@ class eZFTPDataTransfer
 
     function read()
     {
-        if ( $this->client->pasv )
+        if ( $this->pasv )
         {
             return socket_read( $this->dataConnection, 1024 );
         }
@@ -143,13 +149,13 @@ class eZFTPDataTransfer
     
     function send( $str )
     {   
-//        if ( $this->client->transferType == "A" )
+//        if ( $this->transferType == "A" )
 //        {
 //            $str = str_replace( "\r", '', $str );
 //            $str = str_replace( "\n", eZServer::CRLF, $str );
 //        }
         
-        if ( $this->client->pasv )
+        if ( $this->pasv )
         {
             socket_write( $this->dataConnection, $str, strlen( $str ) );
         }
@@ -161,7 +167,7 @@ class eZFTPDataTransfer
 
     function eol()
     {
-        $eol = ( $this->client->transferType == "A" ) ? eZFTPServer::CRLF : eZFTPServer::LF;
+        $eol = ( $this->transferType == "A" ) ? eZFTPServer::CRLF : eZFTPServer::LF;
         $this->send( $eol );
     }
     
@@ -170,14 +176,15 @@ class eZFTPDataTransfer
     	return $this->done;
     }
     
-    //eZFTPClient objects
     private $client;
     private $command;
-    
-    //is transfert done?
+    private $io;
+    private $pasv;
+    private $transferType;
     private $done;
-    
-    //data socket resource
+    private $dataSocket;
+    private $dataAddr;
+    private $dataPort;
     private $dataConnection;
     private $dataFsp;
 }
