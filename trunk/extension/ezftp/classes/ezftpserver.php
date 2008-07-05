@@ -72,14 +72,14 @@ class eZFTPServer
         while ( !$abort )
         {
             // sockets we want to pay attention to
-            $setArray = array_merge( array( "server" => $this->socket ), $this->getClientConnections() );
+            $socketsList = array_merge( array( 'server' => $this->socket ), $this->getClientConnections() );
             
-            $set = $setArray;
+            $set = $socketsList;
             
             // loop through sockets and check for data transfers
-            foreach( $set as $sockKey => $sock )
+            foreach( $set as $identifier => $socket )
             {
-                $clientID = array_search( $sock, $setArray );
+                $clientID = array_search( $socket, $socketsList );
                 if ( !$clientID || $clientID == 'server' )
                     continue;
                 
@@ -94,21 +94,21 @@ class eZFTPServer
                     {
                         // do data transfer, and remove client from socket list for listening on the control connection
                         $dataTransfer->interact();
-                        unset( $set[$sockKey] );
+                        unset( $set[$identifier] );
                     }
                 }
             }
             
             reset($set);
             
-            if ( socket_select($set, $setW = NULL, $setE = NULL, 0) > 0)
+            if ( socket_select( $set, $setW, $setE, 0 ) > 0)
             {
                 // loop through sockets
-                foreach( $set as $sock )
+                foreach( $set as $socket )
                 {
-                    $name = array_search ( $sock, $setArray );
+                    $name = array_search ( $socket, $socketsList );
 
-                    if (! $name )
+                    if ( !$name)
                     {
                         continue;
                     }
@@ -138,12 +138,12 @@ class eZFTPServer
                             $ipPool = array();
                             foreach( $this->clients as $client )
                             {
-                                $key = $client->addr;
-                                $ipPool[$key] = ( array_key_exists( $key, $ipPool ) ) ? $ipPool[$key] + 1 : 1;
+                                $ip = $client->addr;
+                                $ipPool[$ip] = ( array_key_exists( $ip, $ipPool ) ) ? $ipPool[$ip] + 1 : 1;
                             }
                             
                             // disconnect when MaxConnexionPerIP is exceeded for this client
-                            if ($ipPool[$key] > $this->settings['MaxConnexionPerIP'])
+                            if ( $ipPool[$ip] > $this->settings['MaxConnexionPerIP'] )
                             {
                                 $this->clients[$clientID]->send( 421, 'Too many connections from this IP.' );
                                 $this->removeClient($clientID);
@@ -163,7 +163,7 @@ class eZFTPServer
                         if ( !$this->clients[$clientID]->hasDataTransfer() ) {
                             
                             // client socket has incoming data
-                            if ( ( $read = @socket_read( $sock, 1024 ) ) === false || $read == '' )
+                            if ( ( $read = @socket_read( $socket, 1024 ) ) === false || $read == '' )
                             {
                                 if ($read != '')
                                 {
