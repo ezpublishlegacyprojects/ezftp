@@ -978,7 +978,7 @@ class eZFTPClient
     }
     
     private function cleanPath( $path )
-    {
+    {        
         $path = preg_replace( '/[\/]+/', '/', $path );
         
         //absolute path

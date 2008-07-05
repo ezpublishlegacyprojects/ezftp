@@ -50,6 +50,9 @@ class eZFTPInOut
     public function setPath( $path )
     {
     	$this->reset();
+        
+        $path = $this->decodePath( $path );
+        
         $this->path = $path;
         
         // We're on the root dir
@@ -637,9 +640,9 @@ class eZFTPInOut
         $object = $node->attribute( 'object' );
 
         // By default, everything is displayed as a folder:
-        // Trim the name of the node, it is in some cases whitespace in eZ Publish      
-        $entry['name']     = trim( $node->attribute( 'name' ) );
-        $entry['size']     = '0';
+        // Trim the name of the node, it is in some cases whitespace in eZ Publish   
+        $entry['name']     = $node->attribute( 'name' );
+        $entry['size']     = '4096';
         $entry['owner'] = 'ezpublish';
         $entry['group'] = 'ezpublish';
         $entry['time'] = $this->formatTime( $object->attribute( 'published' ) );
@@ -699,7 +702,7 @@ class eZFTPInOut
             }
         }
         
-        $entry['name']  = $this->encodePath( $entry['name'] ); 
+        $entry['name']  = $this->encodePath( $entry['name'] );
         return $entry;
     }
 
@@ -730,7 +733,8 @@ class eZFTPInOut
     
     private function encodePath( $path )
     {
-    	//UTF-8 support
+    	print_r( $path . ": " );
+        //UTF-8 support
         if ( $this->client->isUtf8Enabled() )
         {
             $outputCharset = 'UTF-8';   
@@ -740,6 +744,23 @@ class eZFTPInOut
             $outputCharset = 'iso-8859-1';
         }
         $codec = eZTextCodec::instance( false, $outputCharset );
+        $path = $codec->convertString( $path );
+        print_r( $path ."\n" );
+        return $path;
+    }
+    
+    private function decodePath( $path )
+    {
+        //UTF-8 support
+        if ( $this->client->isUtf8Enabled() )
+        {
+            $inputCharset = 'UTF-8';   
+        }
+        else
+        {
+            $inputCharset = 'iso-8859-1';
+        }
+        $codec = eZTextCodec::instance( $inputCharset, false );
         $path = $codec->convertString( $path );
         return $path;
     }
