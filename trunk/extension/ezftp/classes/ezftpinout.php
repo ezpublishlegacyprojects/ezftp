@@ -4,12 +4,10 @@ include_once( 'extension/ezftp/classes/ezftpinout.php' );
 
 class eZFTPInOut
 {
+
     /*
-    const SUCCESS = 1;
-    const FAILED_NOT_FOUND = -1;
-    const FAILED_FORBIDDEN = -2;
-    const FAILED_INVALID_TYPE = -3;
-    */
+     * PUBLIC
+     */
     
     const TYPE_DIRECTORY = 1;
     const TYPE_FILE = 2;
@@ -24,25 +22,7 @@ class eZFTPInOut
         $this->path = false;
         $this->reset();
 	}
-    
-    /**
-     * Reset internal variables
-     */
-    private function reset()
-    {
-        $this->nodePath = false;
-        $this->site = false;
-        //$this->virtualFolder = false;
-        $this->node = null;
-        $this->exists = false;
-        $this->canRead = false;
-        $this->canModify = false;
-        $this->canCreate = false;
-        $this->canDelete = false;
-        $this->tmpFp = false;
-        $this->tmpFilepath = false;
-    }
-    
+
     /**
      * Set the current path to work with,
      * and parse it
@@ -199,7 +179,7 @@ class eZFTPInOut
     }
 
     /**
-     * Return list of files in the working path
+     * Get a list of files in the working path
      * @return array
      */
     public function ls()
@@ -318,11 +298,6 @@ class eZFTPInOut
         return $success;
     }
 
-    /**
-     * Handles deletion on the content tree level.
-     * It will try to find the node of the target \a $target
-     *and then try to remove it (ie. move to trash) if the user is allowed.
-     */
     public function delete()
     {
         if ( $this->node == null )
@@ -335,7 +310,7 @@ class eZFTPInOut
         return true;
     }
 
-    public function md()
+    public function mkdir()
     {
         $parentNode = $this->fetchParentNodeByTranslation( $this->nodePath );
         if ( !$parentNode )
@@ -394,11 +369,44 @@ class eZFTPInOut
         }
     }
 
-    private function perms( $path )
+    public function rename( $destinationName )
+    {
+        $destinationName = $this->fileBasename( $destinationName );
+        $object = $this->node->attribute( 'object' );
+        if( !$object->rename( $destinationName ) )
+        {
+            return false;
+        }
+        return true;
+    }
+
+    public function perms( $path )
     {
         return 'drwxr-xr-x';
     }
+    
+    /*
+     * PRIVATE
+     */
 
+    /**
+     * Reset internal variables
+     */
+    private function reset()
+    {
+        $this->nodePath = false;
+        $this->site = false;
+        //$this->virtualFolder = false;
+        $this->node = null;
+        $this->exists = false;
+        $this->canRead = false;
+        $this->canModify = false;
+        $this->canCreate = false;
+        $this->canDelete = false;
+        $this->tmpFp = false;
+        $this->tmpFilepath = false;
+    }
+    
     private function virtualContentFolderName()
     {
         return ezi18n( 'kernel/content', 'Content' );
@@ -934,7 +942,7 @@ class eZFTPInOut
       print( $third ); // prints 'path', $newPath is now ''
       \endcode
     */
-    function splitLastPathElement( $path, &$element )
+    private function splitLastPathElement( $path, &$element )
     {
         $len = strlen( $path );
         if ( $len > 0 and $path[$len - 1] == '/' )
@@ -952,6 +960,10 @@ class eZFTPInOut
         }
         return $path;
     }
+    
+    /*
+     * STATIC
+     */
     
     static function tempDirectory()
     {

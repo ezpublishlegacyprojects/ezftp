@@ -23,6 +23,7 @@ class eZFTPClient
         $this->parameter    = '';
         $this->transferType = 'A';
         $this->utf8Enabled = false;
+        $this->rnfr == false;
     }
     
     public function run()
@@ -59,9 +60,6 @@ class eZFTPClient
             $matches = explode ( eZFTPServer::SP , $this->buffer, 2 );
             $this->command = isset( $matches[0] )?strtoupper( $matches[0] ):'';
             $this->parameter = isset( $matches[1] )?rtrim( $matches[1] ):'';
-            
-            eZDebug::writeDebug( 'command: *' . $this->command .'*', 'eZFTPClient::interact' );
-            eZDebug::writeDebug( 'parameter: *' . $this->parameter .'*', 'eZFTPClient::interact' );
             
             //capture strange command
             if ( $this->command == '' || preg_match( '/\W/'  , $this->command ) )
@@ -155,20 +153,17 @@ class eZFTPClient
                 case 'MKD':
                     $this->cmdMkd();
                     break;
+                case 'RNFR':
+                    $this->cmdRnfr();
+                    break;
+                case 'RNTO':
+                    $this->cmdRnto();
+                    break;
 //                case 'APPE':
 //                    $this->cmdAppe();
 //                    break;
 //                case 'SITE':
 //                    $this->cmdSite();
-//                    break;
-//                case 'MKD':
-//                    $this->cmdMkd();
-//                    break;
-//                case 'RNFR':
-//                    $this->cmdRnfr();
-//                    break;
-//                case 'RNTO':
-//                    $this->cmdRnto();
 //                    break;
                 default:    
                     $this->send( 502, 'Command not implemented' );
@@ -857,7 +852,7 @@ class eZFTPClient
 
         if ( !$this->io->exists() )
         {
-            $this->send( 550, "Can't delete $path: File does not exist." );
+            $this->send( 550, "Can't delete $path: File does not exist" );
         }
         elseif ( $this->io->type() != eZFTPInOut::TYPE_FILE )
         {
@@ -869,11 +864,11 @@ class eZFTPClient
         }
         elseif ( !$this->io->delete() )
         {
-            $this->send( 550, "Couldn't delete file." );
+            $this->send( 550, "Couldn't delete file" );
         }
         else
         {
-            $this->send( 250, "DELE command successfull." );
+            $this->send( 250, "DELE command successfull" );
         }
     }
     
@@ -892,7 +887,7 @@ class eZFTPClient
 
         if ( !$this->io->exists() )
         {
-            $this->send( 550, "Can't delete $path: Directory does not exist." );
+            $this->send( 550, "Can't delete $path: Directory does not exist" );
         }
         elseif ( $this->io->type() != eZFTPInOut::TYPE_DIRECTORY )
         {
@@ -904,11 +899,11 @@ class eZFTPClient
         }
         elseif ( !$this->io->delete() )
         {
-            $this->send( 550, "Couldn't delete directory." );
+            $this->send( 550, "Couldn't delete directory" );
         }
         else
         {
-            $this->send( 250, "RMD command successfull." );
+            $this->send( 250, "RMD command successfull" );
         }
     }
     
@@ -926,20 +921,92 @@ class eZFTPClient
 
         if ( $this->io->exists() )
         {
-            $this->send( 550, "Can't create $path: Directory exist." );
+            $this->send( 550, "Can't create $path: Directory exist" );
         }
         elseif ( !$this->io->canCreate() )
         {
             $this->send( 550, "Can't create $path: Permission denied" );
         }
-        elseif ( !$this->io->md() )
+        elseif ( !$this->io->mkdir() )
         {
-            $this->send( 550, "Couldn't create directory." );
+            $this->send( 550, "Couldn't create directory" );
         }
         else
         {
             $this->send( 250, "MKD command successfull" );
         }
+    }
+    
+    /**
+     * RNFR ftp command
+     * syntax:
+     *   RNFR <SP> <pathname> <CRLF>
+     *   <pathname> ::= <string>
+     */
+    private function cmdRnfr()
+    {        
+        $path = $this->cleanPath( $this->parameter );
+        
+        $this->io->setPath( $path );
+
+        if ( !$this->io->exists() )
+        {
+            $this->send( 553, "Can't rename $path: File doesn't exist" );
+        }
+        else
+        {
+            //$this->rnfr = $this->io->getObject();
+            $this->rnfr = $path;
+            $this->send( 350, "RNFR command successful" );
+        }
+    }
+    
+    /**
+     * RNTO ftp command
+     * syntax:
+     *   RNTO <SP> <pathname> <CRLF>
+     *   <pathname> ::= <string>
+     */
+    private function cmdRnto()
+    {
+        $path = $this->cleanPath( $this->parameter );
+        
+        $io = new eZFTPInOut( $this );
+        $io->setPath( $path );
+        
+        if ( !$this->rnfr )
+        {
+            $this->send( 553, "Can't rename to $path: need an RNFR command" );
+        }
+        //only rename
+        elseif ( dirname( $path ) == dirname( $this->rnfr ) )
+        {
+        	if ( !$this->io->canModify() )
+            {
+                $this->send( 553, "Can't rename $path: Permission denied" );
+            }
+            else
+            {
+            	$this->io->rename( basename( $path ) );
+                $this->send( 250, "RNTO command successful");
+            }
+        }
+// TODO implement move
+//        //move
+//        elseif ( !$io->canCreate() )
+//        {
+//            $this->send( 550, "Can't rename $path: Permission denied" );
+//        }
+//        elseif ( $this->io->move( $io->getParentNode() ) )
+//        {
+//            $this->send( 250, "RNTO command successful");
+//        }
+        else
+        {
+            $this->send( 553, "Requested action not taken");
+        }
+        
+        $this->rnfr == false;
     }
     
     private function utf8StatusMessage()
@@ -1027,15 +1094,12 @@ class eZFTPClient
     public $user;
     private $login;
     private $userHomeDir;
-    
     var $buffer;
     var $transferType;
-    
     public $connection;
     var $addr;
     var $port;
     var $pasv;
-    
     public $dataTransfer;
     var $dataAddr;
     var $dataPort;
@@ -1047,6 +1111,7 @@ class eZFTPClient
     var $io;
     var $cwd;
     private $utf8Enabled;
+    private $rnfr;
     
 }
 ?>
