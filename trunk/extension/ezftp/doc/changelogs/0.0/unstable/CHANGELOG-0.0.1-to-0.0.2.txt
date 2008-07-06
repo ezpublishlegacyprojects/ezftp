@@ -1,7 +1,7 @@
 eZFTP extension changelogs
 --------------------------
 
-from 0.0.1 to 1.0.0-alpha1
+from 0.0.1 to 0.0.2
 ===================
 
 -- added support of RMD command
