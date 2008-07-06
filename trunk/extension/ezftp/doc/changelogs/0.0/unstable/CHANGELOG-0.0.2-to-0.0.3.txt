@@ -1,0 +1,7 @@
+eZFTP extension changelogs
+--------------------------
+
+from 0.0.2 to 0.0.3
+===================
+
+-- added support for RNFR and RNTO (renaming only)

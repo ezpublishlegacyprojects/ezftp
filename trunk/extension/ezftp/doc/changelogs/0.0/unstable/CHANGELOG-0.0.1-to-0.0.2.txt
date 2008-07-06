@@ -4,7 +4,6 @@ eZFTP extension changelogs
 from 0.0.1 to 0.0.2
 ===================
 
--- added support for RNFR and RNTO (renaming only)
 -- added support of RMD command
 -- fixed bug http://projects.ez.no/ezftp/forum/bug_report/bug_with_cwd_command_utf8_mode_not_enabled
 -- added support of RMD command
