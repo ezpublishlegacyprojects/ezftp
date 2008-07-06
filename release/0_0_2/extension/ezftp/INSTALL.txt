@@ -1,0 +1,104 @@
+eZFTP extension INSTALL
+-----------------------
+
+Requirements
+============
+
+The following requirements exists for using eZFTP extension:
+
+o  eZ publish version:
+
+   Make sure you use eZ publish version 4.0 or higher.
+
+o  PHP version:
+
+   as indicated in your eZ publish version requirements
+   with sockets, and posix support.
+   
+o  Operating system:
+
+	This extension will not work on Windows system.
+
+Installing eZFTP extension
+==========================
+
+1. Download the package.
+
+2. Copy the downloaded package into the 'extension' directory of your
+   eZPublish installation.
+
+3. Unpack the files in the distribution.
+
+   Windows users should unzip the files. The 'ezdhtml' directory will be created
+   inside the 'extension' directory.
+
+   Linux users may use of the following commands depending on the file type:
+   [tar.gz]:
+   $ tar -zxvf ezftp-extension-0.0.1.tar.gz
+   [bz2]:
+   $ tar -jxvf ezftp-extension-0.0.1.bz2
+   [zip]:
+   $ unzip ezftp-extension-0.0.1.zip
+
+4. Enable the eZFTP extension in eZPublish.
+
+   To enable eZFTP for all of your siteaccesses, log in to your eZPublish
+   administration interface, click on the 'Setup' tab, and then click
+   'Extensions' on the left. You will see the list of available extensions.
+   Select the 'ezdhtml' item and click the 'Apply changes' button.
+   Aternatively, you can also edit the file 'site.ini.append.php' located
+   in the 'settings/override' directory. Add the following line under
+   the [ExtensionSettings] section:
+   
+   ActiveExtensions[]=ezftp
+
+   Create the file and/or the section if they do not exist.
+
+   To enable eZFTP for only a single siteaccess, open the 'site.ini.append.php'
+   file located in the 'settings/siteaccess/your_siteaccess' directory.
+   Add the following line under the [ExtensionSettings] section:
+
+   ActiveAccessExtensions[]=ezftp
+   
+   Create the file and/or the section if they do not exist. 
+
+5. Customize the settings
+
+   Create a file 'ezftp.ini.append.php' in the 'settings/override' directory.
+   
+   Copy groups and settings from extension/ezftp/settings/ezftp.ini.append.php
+   you need to customize.
+
+6. Clear the eZPublish caches.
+
+   Log in to your eZPublish administration interface, select the 'Setup' tab,
+   and then click the 'Clear all caches' button. If you use eZPublish 3.6
+   or higher, you can also use the developer toolbar (if enabled) located
+   in the right hand side. Simply select 'All caches' from the drop-down list
+   and click the 'Clear' button.
+
+   The other way to clear all caches is to remove the contents of 'var/cache/'
+   and/or 'var/your_siteaccess/cache/' directory. This can either be done
+   manually or by making use of a script.
+
+   Linux users may launch the following script:
+
+   $ php ./bin/shell/clearcache.sh --clear-all
+   
+   If you have PHP CLI installed, you can also do the following (this script
+   should also work on Windows):
+   
+   $ php ./bin/php/ezcache.php --clear-all
+
+7. Launch the daemon
+
+  Log in to your server as root in ssh. Go to the directory of your eZPublish
+  installation and type in the following command :
+  
+  $ php ./extension/ezftp/daemon.php
+  
+8. Try to access your eZPublish FTP with an FTP client such FileZilla
+  
+
+
+
