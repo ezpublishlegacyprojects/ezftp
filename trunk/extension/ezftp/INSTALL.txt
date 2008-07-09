@@ -29,7 +29,7 @@ Installing eZFTP extension
 
 3. Unpack the files in the distribution.
 
-   Windows users should unzip the files. The 'ezdhtml' directory will be created
+   Windows users should unzip the files. The 'ezftp' directory will be created
    inside the 'extension' directory.
 
    Linux users may use of the following commands depending on the file type:
