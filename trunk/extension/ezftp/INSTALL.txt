@@ -24,7 +24,7 @@ Installing eZFTP extension
 
 1. Download the package.
 
-2. Copy the downloaded package into the 'extension' directory of your
+2. Copy the downloaded package into the root directory of your
    eZPublish installation.
 
 3. Unpack the files in the distribution.
@@ -34,11 +34,11 @@ Installing eZFTP extension
 
    Linux users may use of the following commands depending on the file type:
    [tar.gz]:
-   $ tar -zxvf ezftp-extension-0.0.1.tar.gz
+   $ tar -zxvf ezftp-x.x.x.tar.gz
    [bz2]:
-   $ tar -jxvf ezftp-extension-0.0.1.bz2
+   $ tar -jxvf ezftp-x.x.x.bz2
    [zip]:
-   $ unzip ezftp-extension-0.0.1.zip
+   $ unzip ezftp-x.x.x.zip
 
 4. Enable the eZFTP extension in eZPublish.
 
