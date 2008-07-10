@@ -72,14 +72,14 @@ class eZFTPServer
         while ( !$abort )
         {
             // sockets we want to pay attention to
-            $socketsList = array_merge( array( 'server' => $this->socket ), $this->getClientConnections() );
+            $socketList = array_merge( array( 'server' => $this->socket ), $this->getClientConnections() );
             
-            $set = $socketsList;
+            $tmpSocketList = $socketList;
             
             // loop through sockets and check for data transfers
-            foreach( $set as $identifier => $socket )
+            foreach( $tmpSocketList as $identifier => $socket )
             {
-                $clientID = array_search( $socket, $socketsList );
+                $clientID = array_search( $socket, $socketList );
                 if ( !$clientID || $clientID == 'server' )
                     continue;
                 
@@ -94,19 +94,19 @@ class eZFTPServer
                     {
                         // do data transfer, and remove client from socket list for listening on the control connection
                         $dataTransfer->interact();
-                        unset( $set[$identifier] );
+                        unset( $tmpSocketList[$identifier] );
                     }
                 }
             }
             
-            reset($set);
+            reset($tmpSocketList);
             
-            if ( socket_select( $set, $setW, $setE, 0 ) > 0)
+            if ( socket_select( $tmpSocketList, $tmpSocketListW, $tmpSocketListE, 0 ) > 0)
             {
                 // loop through sockets
-                foreach( $set as $socket )
+                foreach( $tmpSocketList as $socket )
                 {
-                    $name = array_search ( $socket, $socketsList );
+                    $name = array_search ( $socket, $socketList );
 
                     if ( !$name)
                     {
