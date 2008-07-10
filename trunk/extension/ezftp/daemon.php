@@ -79,7 +79,6 @@ eZExecution::addCleanupHandler( 'eZDBCleanup' );
 eZExecution::addFatalErrorHandler( 'eZFatalError' );
 eZDebug::setHandleType( eZDebug::HANDLE_FROM_PHP );
 eZModule::setGlobalPathList( array( "kernel" ) );
-$GLOBALS['eZFTPDataPortPool'] = array();
 
 //set the siteaccess to the default siteaccess
 require_once( "access.php" );

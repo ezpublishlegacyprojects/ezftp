@@ -24,6 +24,11 @@ class eZFTPClient
         $this->transferType = 'A';
         $this->utf8Enabled = false;
         $this->rnfr == false;
+        
+        if ( !isset( $GLOBALS['eZFTPDataPortPool'] ) )
+        {
+            $GLOBALS['eZFTPDataPortPool'] = array();
+        }
     }
     
     public function run()
