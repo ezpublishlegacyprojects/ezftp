@@ -45,4 +45,8 @@ FolderClasses[]=frontpage
 [PutSettings]
 DefaultClass=file
 
+[FolderSettings]
+FolderClassID=1
+NameAttribute=name
+
 */ ?>
